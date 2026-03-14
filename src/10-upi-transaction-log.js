@@ -48,4 +48,80 @@
  */
 export function analyzeUPITransactions(transactions) {
   // Your code here
+  if (!Array.isArray(transactions) || transactions.length === 0) return null;
+
+  
+  const valid = transactions.filter((txn) => {
+  
+    if (typeof txn.amount !== "number" || txn.amount <= 0) return false;
+  
+    if (txn.type !== "credit" && txn.type !== "debit") return false;
+    return true;
+  });
+
+  
+  if (valid.length === 0) return null;
+
+  
+  const totalCredit = valid
+    .filter((txn) => txn.type === "credit")
+    .reduce((sum, txn) => sum + txn.amount, 0);
+
+  const totalDebit = valid
+    .filter((txn) => txn.type === "debit")
+    .reduce((sum, txn) => sum + txn.amount, 0);
+
+  const netBalance = totalCredit - totalDebit;
+  const transactionCount = valid.length;
+
+  
+  const totalAmount = valid.reduce((sum, txn) => sum + txn.amount, 0);
+  const avgTransaction = Math.round(totalAmount / transactionCount);
+
+  
+  let highestTransaction = valid[0];
+  for (const txn of valid) {
+    if (txn.amount > highestTransaction.amount) {
+      highestTransaction = txn;
+    }
+  }
+
+  
+  const categoryBreakdown = valid.reduce((breakdown, txn) => {
+    breakdown[txn.category] = (breakdown[txn.category] || 0) + txn.amount;
+    return breakdown;
+  }, {});
+
+  
+  const contactCounts = valid.reduce((counts, txn) => {
+    counts[txn.to] = (counts[txn.to] || 0) + 1;
+    return counts;
+  }, {});
+
+  
+  let frequentContact = valid[0].to;
+  let maxCount = 0;
+  for (const [contact, count] of Object.entries(contactCounts)) {
+    if (count > maxCount) {
+      maxCount = count;
+      frequentContact = contact;
+    }
+  }
+
+  
+  const allAbove100 = valid.every((txn) => txn.amount > 100);
+  const hasLargeTransaction = valid.some((txn) => txn.amount >= 5000);
+
+  return {
+    totalCredit,
+    totalDebit,
+    netBalance,
+    transactionCount,
+    avgTransaction,
+    highestTransaction,
+    categoryBreakdown,
+    frequentContact,
+    allAbove100,
+    hasLargeTransaction,
+  };
 }

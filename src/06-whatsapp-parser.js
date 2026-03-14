@@ -40,4 +40,53 @@
  */
 export function parseWhatsAppMessage(message) {
   // Your code here
+  if (
+    typeof message !== "string" ||
+    !message.includes("-") ||
+    !message.includes(":") ||
+    !message.includes(":", message.indexOf(":") + 1) // Checking after the colon appearing in time
+  ) {
+    return null;
+  }
+
+  const date = message.split(",", 1).join("").trim();
+  const time = message
+    .slice(message.indexOf(",") + 1, message.indexOf("-"))
+    .trim();
+  const sender = message
+    .slice(
+      message.indexOf("-") + 1,
+      message.indexOf(":", message.indexOf(":") + 1),
+    )
+    .trim();
+  let text = message
+    .slice(message.indexOf(":", message.indexOf(":") + 1) + 1) // To not take into account the ':' in time
+    .trim();
+
+
+  // Getting rid of extra spaces
+  text = text
+    .split(" ")
+    .filter((word) => word !== "")
+    .join(" ");
+
+  const wordCount = text.split(" ").length;
+
+  let sentiment;
+
+  if (
+    text.toLowerCase().includes("haha") ||
+    text.includes("😂") ||
+    text.includes(":)")
+  )
+    sentiment = "funny";
+  else if (
+    text.toLowerCase().includes("love") ||
+    text.toLowerCase().includes("pyaar") ||
+    text.includes("❤")
+  )
+    sentiment = "love";
+  else sentiment = "neutral";
+
+  return { date, time, sender, text, wordCount, sentiment };
 }
